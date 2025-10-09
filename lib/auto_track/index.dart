@@ -15,7 +15,7 @@ class AutoTrack {
   static final AutoTrack _instance = AutoTrack._();
   AutoTrack._();
 
-  factory AutoTrack({ AutoTrackConfig? config }) {
+  factory AutoTrack({AutoTrackConfig? config}) {
     _instance.config(config);
 
     MethodChannelAutoTrack().getLastCrashReport().then((report) {
@@ -38,6 +38,14 @@ class AutoTrack {
     AutoTrackConfigManager.instance.updateConfig((config) {
       return config.copyWith(samplingRate: rate);
     });
+  }
+
+  AutoTrack setAuth(bool auth) {
+    if (auth) {
+      AutoTrackConfigManager.instance.setAuth(auth);
+      AutoTrackConfigManager.instance.init();
+    }
+    return _instance;
   }
 
   AutoTrack config(AutoTrackConfig? config) {
@@ -68,7 +76,8 @@ class AutoTrack {
   AutoTrack ignoreElementStringKeys(List<String>? ignoreElementStringKeys) {
     if (ignoreElementStringKeys != null) {
       AutoTrackConfigManager.instance.updateConfig((config) {
-        return config.copyWith(ignoreElementStringKeys: ignoreElementStringKeys);
+        return config.copyWith(
+            ignoreElementStringKeys: ignoreElementStringKeys);
       });
     }
     return _instance;

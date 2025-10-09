@@ -14,14 +14,10 @@ typedef UpdateConfigFunc = AutoTrackConfig Function(AutoTrackConfig);
 class AutoTrackConfigManager {
   static final AutoTrackConfigManager instance = AutoTrackConfigManager._();
 
-  AutoTrackConfigManager._() {
-    PackageInfo.fromPlatform().then((value) => _appVersion = value.version);
-    DeviceInfoPlugin().deviceInfo.then((value) {
-      _deviceInfo = value.data;
-      _baseDeviceInfo = value;
-      _updateDeviceId();
-    });
-  }
+  AutoTrackConfigManager._();
+
+  bool _hasAgreed = false;
+  bool get hasAgreed => _hasAgreed;
 
   String _appVersion = '';
   String get appVersion => _appVersion;
@@ -38,6 +34,23 @@ class AutoTrackConfigManager {
 
   bool _autoTrackEnable = false;
   bool get autoTrackEnable => _autoTrackEnable;
+
+  void setAuth(bool agree) {
+    _hasAgreed = agree;
+  }
+
+  void init() {
+    if (_hasAgreed) {
+      PackageInfo.fromPlatform().then((value) => _appVersion = value.version);
+      DeviceInfoPlugin().deviceInfo.then((value) {
+        _deviceInfo = value.data;
+        _baseDeviceInfo = value;
+        _updateDeviceId();
+      });
+    } else {
+      print('AutoTrack: Please agree to the privacy policy first.');
+    }
+  }
 
   void setConfig(AutoTrackConfig config) {
     updateConfig((old) {
@@ -56,6 +69,10 @@ class AutoTrackConfigManager {
   }
 
   void _updateDeviceId() {
+    if (!_hasAgreed) {
+      print('AutoTrack: Please agree to the privacy policy first.');
+      return;
+    }
     if (_baseDeviceInfo is IosDeviceInfo) {
       _deviceId = md5
           .convert(utf8.encode(
